@@ -1,39 +1,13 @@
-# PowerPoint Generator for Hermes
+# PowerPoint MCP and Hermes Skill
 
-A portable Hermes skill for planning, generating, and quality-checking PowerPoint presentations.
+This repository contains the two components used by the local Hermes PowerPoint workflow:
 
-## Features
+1. `powerpoint-generator/` — the Hermes skill that controls requirements gathering, outline approval, content generation, layout rules, online image sourcing, batch construction, and presentation QA.
+2. `mcp-server/` — a vendored source snapshot of `office-powerpoint-mcp-server==2.0.7`, the MCP server currently launched by Hermes through `uvx`.
 
-- Generates the complete slide-by-slide content specification after outline approval
-- Batch-builds an editable PowerPoint presentation instead of repeatedly generating and checking one slide at a time
-- Detects orphaned peer items in rows, circular diagrams, people layouts, and requirement groups
-- Supports online image search with source, attribution, relevance, and image-quality checks
-- Includes a company PowerPoint template and template-specific brand rules
-- Includes a script for detecting text overflow, overlap, and excessive content density
+## Current Local Runtime
 
-## Repository Visibility
-
-This repository should remain **private**.
-
-`powerpoint-generator/assets/company-template.pptx` contains company template styling, `Confidential` markings, and original PowerPoint document metadata. Do not publish this file in a public repository unless you have confirmed that you are authorized to distribute the template publicly.
-
-The skill code and Markdown documentation use the included MIT License. Rights to use or redistribute the bundled company template must be confirmed separately.
-
-## Installation
-
-Install Hermes on the destination computer, then copy the complete `powerpoint-generator` directory to:
-
-```text
-~/.hermes/skills/productivity/powerpoint-generator/
-```
-
-Confirm that this file exists:
-
-```text
-~/.hermes/skills/productivity/powerpoint-generator/SKILL.md
-```
-
-Enable the PowerPoint MCP server in `~/.hermes/config.yaml`:
+The verified Hermes configuration uses:
 
 ```yaml
 mcp_servers:
@@ -47,34 +21,88 @@ mcp_servers:
     enabled: true
 ```
 
-The destination computer also needs:
+The locally cached package was verified as:
 
-- A working `uvx` installation
-- Access to download or run `office-powerpoint-mcp-server`
-- Hermes browser or image-search tools for online image sourcing
-- Network access for searching and downloading images
+```text
+Name: office-powerpoint-mcp-server
+Version: 2.0.7
+Entry point: ppt_mcp_server = ppt_mcp_server:main
+```
 
-Start a new Hermes conversation after installation so that Hermes loads the skill again.
+The upstream snapshot contains an internal version mismatch: its installed package metadata is `2.0.7`, while `get_server_info()` reports `2.1.0`. This repository preserves the installed files unchanged and identifies the snapshot by its package version, `2.0.7`.
 
-## Using GitHub for Synchronization
+All cached copies of the installed server entry module had the same SHA-256 digest before this snapshot was created.
 
-A private GitHub repository is preferable to repeatedly sending ZIP archives:
+## Add Your Own PowerPoint Template
 
-- It preserves the history of every skill update
-- Multiple computers can synchronize changes with `git pull`
-- Previous versions can be restored when necessary
-- ZIP archives can still be used for initial transfer or offline backup
+No company PowerPoint template is included in this repository.
 
-Upload this complete repository directory to a private GitHub repository. On another computer, clone the repository and copy or symlink its `powerpoint-generator` directory into the Hermes skills directory.
+To enable the optional company-template workflow, copy a template that you are authorized to use to:
 
-Example:
+```text
+powerpoint-generator/assets/company-template.pptx
+```
+
+See `powerpoint-generator/assets/README.md` for the expected location. Do not commit a proprietary or confidential template to a public repository.
+
+## Install the Hermes Skill
+
+Copy the complete skill directory to:
+
+```text
+~/.hermes/skills/productivity/powerpoint-generator/
+```
+
+The final entry point must be:
+
+```text
+~/.hermes/skills/productivity/powerpoint-generator/SKILL.md
+```
+
+Start a new Hermes conversation after installation so that Hermes reloads the skill.
+
+## Run the MCP Server
+
+### Option A: Reproduce the current `uvx` setup
+
+This is the simplest option and matches the currently verified Hermes configuration:
 
 ```bash
-git clone https://github.com/Xr810/PowerPoint_MCP.git
-mkdir -p ~/.hermes/skills/productivity
-cp -R PowerPoint_MCP/powerpoint-generator \
-  ~/.hermes/skills/productivity/powerpoint-generator
+uvx --from office-powerpoint-mcp-server==2.0.7 ppt_mcp_server
 ```
+
+Use the YAML configuration shown in **Current Local Runtime**. Add `==2.0.7` after the package name if you want to pin the exact uploaded version.
+
+### Option B: Run the vendored local snapshot
+
+Install or verify `uv`, then run:
+
+```bash
+cd mcp-server
+uv sync
+uv run ppt_mcp_server
+```
+
+To make Hermes use this local checkout:
+
+```yaml
+mcp_servers:
+  ppt:
+    command: uv
+    args:
+      - run
+      - --project
+      - /absolute/path/to/PowerPoint_MCP/mcp-server
+      - ppt_mcp_server
+    connect_timeout: 120.0
+    enabled: true
+```
+
+Replace `/absolute/path/to/PowerPoint_MCP` with the real checkout path on that computer.
+
+## Online Image Sourcing
+
+The Hermes skill permits online image discovery when images materially improve a presentation. The destination Hermes installation must expose browser or image-search tools and allow network access. Downloaded visuals must be relevant, sufficiently large, free of watermarks, and accompanied by source and attribution information when required.
 
 ## Repository Structure
 
@@ -83,23 +111,46 @@ PowerPoint_MCP/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
-└── powerpoint-generator/
-    ├── SKILL.md
+├── powerpoint-generator/
+│   ├── SKILL.md
+│   ├── LICENSE
+│   ├── template_rules.md
+│   ├── content_guidelines.md
+│   ├── slide_patterns.md
+│   ├── assets/
+│   │   └── README.md
+│   └── scripts/
+│       └── check_text_layout.py
+└── mcp-server/
+    ├── README.md
     ├── LICENSE
-    ├── company_template_rules.md
-    ├── content_guidelines.md
-    ├── slide_patterns.md
-    ├── assets/
-    │   └── company-template.pptx
-    └── scripts/
-        └── check_text_layout.py
+    ├── pyproject.toml
+    ├── ppt_mcp_server.py
+    ├── slide_layout_templates.json
+    ├── tools/
+    └── utils/
 ```
 
 ## Validation
 
-Before distributing an updated version:
+Before publishing an update:
 
-1. Validate the skill directory with the skill validation tool.
-2. Confirm that the PowerPoint template opens without archive errors.
-3. Run `scripts/check_text_layout.py` against a generated presentation.
-4. Open a new Hermes conversation and test a complete outline-to-PowerPoint workflow.
+1. Validate `powerpoint-generator/` with the Hermes skill validator.
+2. Parse every Python source file and the MCP `pyproject.toml`.
+3. If you add a PowerPoint template, confirm that it opens without archive errors.
+4. Start the MCP server and verify that it initializes successfully over stdio.
+5. Open a new Hermes conversation and test the complete outline-to-PowerPoint workflow.
+
+## Upstream Attribution
+
+`mcp-server/` is a vendored snapshot of:
+
+- Project: [GongRzhe/Office-PowerPoint-MCP-Server](https://github.com/GongRzhe/Office-PowerPoint-MCP-Server)
+- PyPI package: `office-powerpoint-mcp-server`
+- Installed snapshot version: `2.0.7`
+- Upstream author: GongRzhe
+- License: MIT
+
+The upstream license is preserved in `mcp-server/LICENSE`. The vendored MCP source is not original code authored in this repository.
+
+The Hermes skill code and Markdown documentation use their included license. Any template added by a user remains subject to its own usage and redistribution rights.

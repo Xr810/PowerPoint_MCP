@@ -24,17 +24,17 @@ Apply these to every slide in an academic deck:
 ```javascript
 const COLORS = {
   bg:       "FFFFFF",   // White / light content background
-  primary:  "F58220",   // Company brand orange from template
-  neutral:  "E7E2D9",   // Warm neutral from template
+  primary:  "1F4E79",   // Restrained academic blue
+  neutral:  "D9E2F3",   // Light neutral blue
   body:     "2D2D2D",   // Near-black — body text
   muted:    "777777",   // Gray — citations, captions
-  rule:     "E7E2D9",   // Use template neutral before inventing other dividers
-  highlight:"F58220",   // Brand emphasis — use sparingly
+  rule:     "D9E2F3",   // Quiet divider colour
+  highlight:"C55A11",   // Warm emphasis — use sparingly
 };
 
 const FONTS = {
-  face: "Helvetica",    // Match template first; Arial only as fallback
-  title: 20,             // Company template note: 18–20 pt max on content slides
+  face: "Arial",        // Replace with the selected template font when applicable
+  title: 28,             // Content-slide title
   sectionHeader: 22,     // Within-slide section headers
   body: 20,              // Body bullets: 20 pt minimum
   label: 16,             // Chart annotations, inline labels
@@ -44,12 +44,11 @@ const FONTS = {
 const MARGIN = 0.5;      // Minimum margin from slide edge (inches)
 ```
 
-### Company template defaults inferred from the installed template
+### Template override
 
-- Use layout size `LAYOUT_16X9`
-- Preserve recurring footer treatment such as `Confidential` and `Page` numbering
-- Keep company symbols and embedded assets unchanged
-- Reuse named layouts like `cover slide 1`, `chapter title slide`, `content slide 1`, `contact slide`, and `end slide 1/2`
+- When a user-provided template is selected, its slide size, theme, fonts, colours, masters, layouts, logos, and footer system override these generic defaults.
+- Reuse the template's named layouts and embedded assets instead of recreating them.
+- Do not assume that a supplied template uses 16:9 dimensions.
 
 ---
 

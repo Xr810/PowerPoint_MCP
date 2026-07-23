@@ -1,7 +1,7 @@
 ---
 name: powerpoint-generator
 description: "PPT tasks: MUST load first. Missing inputs: stop and ask. Use for creating, revising, updating, improving, planning, or structuring any presentation, PowerPoint, deck, or slides in any language. Enforce the blocking requirements gate and explicit outline approval. After approval, generate the complete deck specification in one pass, batch-build editable slides, and run one whole-deck QA pass before making targeted fixes."
-license: MIT for skill code and documentation; bundled templates may have separate rights. See LICENSE.
+license: MIT for skill code and documentation; user-added templates may have separate rights. See LICENSE.
 metadata:
   hermes:
     tags: [ppt, powerpoint, presentation, deck, slides, slide-deck, planning, comparison, academic, chinese, english, 幻灯片, 演示文稿, 汇报]
@@ -20,7 +20,7 @@ The built-in `powerpoint` skill is optional supplementary guidance. If it is dis
 
 If the user provides an existing `.pptx` template, company template, institution template, or branded deck to imitate, also read:
 
-3. **Template-specific rules** — preserve the template's master, layouts, colours, fonts, logos, and footer conventions. For the company template installed with this skill, read [company_template_rules.md](company_template_rules.md).
+3. **Template-specific rules** — preserve the template's master, layouts, colours, fonts, logos, and footer conventions. When a template is supplied or added to this skill, read [template_rules.md](template_rules.md).
 
 **Always read all applicable files before writing any code or creating any files.**
 
@@ -103,7 +103,7 @@ Anti-pattern:
 |------|-------|
 | Content planning, argument structure, slide-by-slide rules | [content_guidelines.md](content_guidelines.md) |
 | Per-slide-type patterns (title, methods, results, etc.) | [slide_patterns.md](slide_patterns.md) |
-| Company-branded deck using the installed corporate template | [company_template_rules.md](company_template_rules.md) |
+| Branded deck using a user-provided template | [template_rules.md](template_rules.md) |
 | Technical creation or editing | Enabled `ppt` MCP after both gates are open |
 | Optional supplementary implementation guidance | Built-in `powerpoint` skill, only when enabled |
 
@@ -119,7 +119,7 @@ Use this whenever the user supplies a company template, asks to preserve an exis
 
 **Priority order: template fidelity → argument structure → data clarity → layout refinement.**
 
-Follow [company_template_rules.md](company_template_rules.md) in full, then apply the academic argument rules in this skill inside the locked template structure.
+Follow [template_rules.md](template_rules.md) in full, then apply the academic argument rules in this skill inside the locked template structure.
 
 ### Structured Argument (default for academic work)
 
@@ -163,7 +163,7 @@ Do not proceed until the user has explicitly supplied or explicitly decided ever
 1. **Audience** — who will read or see the deck.
 2. **Objective** — inform, compare, persuade, request approval, defend research, sell, or another explicit purpose.
 3. **Length** — target slide count or presentation duration.
-4. **Template choice** — obtain an explicit selection through the clickable template chooser below. Do not silently choose a template, even though the installed company template is the default/recommended option.
+4. **Template choice** — obtain an explicit selection through the clickable template chooser below. Do not silently choose a template.
 5. **Source-material status** — identify the required files/data, or obtain explicit confirmation that no source material is required.
 6. **Structure ownership** — obtain the user's required sections, or explicit permission for the agent to propose the structure and page allocation.
 7. **Required/forbidden slides** — record requirements for agenda, appendix, references, closing, contact, pricing, comparison table, and similar slide types; obtain explicit confirmation when there are none.
@@ -171,22 +171,36 @@ Do not proceed until the user has explicitly supplied or explicitly decided ever
 
 Do not substitute agent judgment for an answer. Words such as "reasonable," "confidently infer," "when relevant," and "materially affect" are not exemptions. If any item is unresolved, remain in `BLOCKED_REQUIREMENTS`, ask only for the missing items, and end the turn.
 
-### Installed template chooser
+### Template chooser
 
-The following template is installed and ready to use:
+An optional company template can be installed at:
 
-- Display name: `Company Template (Installed, Default)`
 - Skill-relative file: `assets/company-template.pptx`
 - Resolved file: `${HERMES_SKILL_DIR}/assets/company-template.pptx`
 
-If the user did not explicitly choose a template, the first clarification must be a dedicated `clarify` call with exactly this structure:
+Check whether that file exists before presenting the template choices.
+
+If the file exists and the user did not explicitly choose a template, the first clarification must be a dedicated `clarify` call with exactly this structure:
 
 ```json
 {
   "question": "Which template should I use for this presentation?",
   "choices": [
-    "Company Template (Installed, Default)",
+    "Company Template (Installed)",
     "I will provide another template",
+    "Match an existing finished deck",
+    "No template — use a custom style"
+  ]
+}
+```
+
+If the file does not exist, omit the installed-template choice:
+
+```json
+{
+  "question": "Which template should I use for this presentation?",
+  "choices": [
+    "I will provide a template",
     "Match an existing finished deck",
     "No template — use a custom style"
   ]
@@ -196,8 +210,8 @@ If the user did not explicitly choose a template, the first clarification must b
 Rules:
 
 - Put each option in `choices`; never embed the options as numbered prose in `question`.
-- Present `Company Template (Installed, Default)` as the first choice so the user can select it with one click.
-- When the user selects it, record the template decision immediately and map it to `${HERMES_SKILL_DIR}/assets/company-template.pptx`. Do not ask the user for a path or ask them to upload it.
+- Present `Company Template (Installed)` as the first choice only when the file exists.
+- When the user selects it, record the template decision immediately and map it to `${HERMES_SKILL_DIR}/assets/company-template.pptx`.
 - Before building, verify that the resolved installed-template file exists. Open/copy that `.pptx` as the base presentation and preserve its masters/layouts. Do not replace it with the PPT MCP's generic `modern_blue` scheme or built-in template IDs.
 - If another choice requires a file or deck identifier, ask for that missing item in the next turn.
 - After the template choice is resolved, ask one compact open-ended `clarify` question covering the remaining unresolved Gate A items. If only one or two items remain, ask only those items. Do not repeat or ask the user to reconfirm information already stated explicitly, including a requested slide count.
@@ -371,7 +385,7 @@ Treat non-overlapping, readable text as a build constraint, not a cosmetic QA pr
 
 #### Fixed readability floors
 
-- Follow the selected template's intended title size. For the installed company template, ordinary content titles remain 18–20 pt.
+- Follow the selected template's intended title size and text hierarchy.
 - Company-template body text should normally be 16–20 pt and must not be reduced below 16 pt merely to force content into a box.
 - Citations, metadata, and footer text may use the template's smaller built-in styles, but must stay inside their dedicated regions.
 - Never call `mcp__ppt__optimize_slide_text` with its default `min_font_size=8`. For company-template content slides, pass `min_font_size=16`; set `max_font_size` to the layout's intended maximum. Optimization is a finishing pass, not permission to exceed the content budget.
@@ -444,7 +458,7 @@ Academic QA checklist:
 □ No required image placeholder is left empty; image layouts contain real visual content or were replaced with a better non-image layout
 □ Every inserted visual was rechecked on the rendered/inspected slide for crop, overlap, distortion, and relevance
 □ Every online visual has a recorded source URL and any required attribution/license note
-□ Company-template body text is at least 16 pt and title text respects the 18–20 pt content-layout cap
+□ Template-based text respects the selected layout's hierarchy and remains readable
 □ The text-layout checker was run and every warning was visually reviewed and corrected
 □ Every slide was rendered/previewed and checked for text overlap, clipping, and overflow
 ```

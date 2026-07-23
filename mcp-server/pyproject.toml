@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "office-powerpoint-mcp-server"
+version = "2.0.7"
+description = "MCP Server for PowerPoint manipulation using python-pptx - Consolidated Edition"
+readme = "README.md"
+requires-python = ">=3.6"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "GongRzhe", email = "gongrzhe@gmail.com" }
+]
+dependencies = [
+  "fonttools>=4.0.0",
+  "mcp[cli]>=1.8.0",
+  "pillow>=8.0.0",
+  "python-pptx>=0.6.21"
+]
+
+[project.urls]
+Homepage = "https://github.com/GongRzhe/Office-PowerPoint-MCP-Server"
+"Bug Tracker" = "https://github.com/GongRzhe/Office-PowerPoint-MCP-Server/issues"
+
+[project.scripts]
+ppt_mcp_server = "ppt_mcp_server:main"
+
+[tool.setuptools]
+py-modules = ["ppt_mcp_server"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tools", "tools.*", "utils", "utils.*"]
+
+[tool.setuptools.data-files]
+"." = ["slide_layout_templates.json"]
