@@ -1,37 +1,39 @@
 # PowerPoint Generator for Hermes
 
-这是一个可迁移的 Hermes PowerPoint 生成 Skill。它包含：
+A portable Hermes skill for planning, generating, and quality-checking PowerPoint presentations.
 
-- 大纲确认后的整套文字内容一次生成
-- 批量构建可编辑 PowerPoint
-- 同级节点、人物、Requirements 和环形布局的孤儿项检查
-- 在线图片搜索、来源记录与图片质量检查
-- 公司 PowerPoint 模板和品牌规则
-- 文本溢出、重叠和密度检查脚本
+## Features
 
-## 仓库可见性
+- Generates the complete slide-by-slide content specification after outline approval
+- Batch-builds an editable PowerPoint presentation instead of repeatedly generating and checking one slide at a time
+- Detects orphaned peer items in rows, circular diagrams, people layouts, and requirement groups
+- Supports online image search with source, attribution, relevance, and image-quality checks
+- Includes a company PowerPoint template and template-specific brand rules
+- Includes a script for detecting text overflow, overlap, and excessive content density
 
-建议将这个仓库设为 **Private**。
+## Repository Visibility
 
-`powerpoint-generator/assets/company-template.pptx` 包含公司模板样式、`Confidential` 标记以及原始 PowerPoint 文档元数据。除非你确认拥有公开分发模板的权利，否则不要把该文件上传到公开仓库。
+This repository should remain **private**.
 
-Skill 的代码和 Markdown 文档沿用目录中的 MIT License；公司模板的使用和分发权需要单独确认。
+`powerpoint-generator/assets/company-template.pptx` contains company template styling, `Confidential` markings, and original PowerPoint document metadata. Do not publish this file in a public repository unless you have confirmed that you are authorized to distribute the template publicly.
 
-## 安装到另一台电脑
+The skill code and Markdown documentation use the included MIT License. Rights to use or redistribute the bundled company template must be confirmed separately.
 
-确保另一台电脑已经安装 Hermes，然后把整个 `powerpoint-generator` 文件夹复制到：
+## Installation
+
+Install Hermes on the destination computer, then copy the complete `powerpoint-generator` directory to:
 
 ```text
 ~/.hermes/skills/productivity/powerpoint-generator/
 ```
 
-最终应当存在：
+Confirm that this file exists:
 
 ```text
 ~/.hermes/skills/productivity/powerpoint-generator/SKILL.md
 ```
 
-在 `~/.hermes/config.yaml` 中启用 PowerPoint MCP：
+Enable the PowerPoint MCP server in `~/.hermes/config.yaml`:
 
 ```yaml
 mcp_servers:
@@ -45,30 +47,39 @@ mcp_servers:
     enabled: true
 ```
 
-另一台电脑还需要：
+The destination computer also needs:
 
-- 可以运行 `uvx`
-- 可以下载或运行 `office-powerpoint-mcp-server`
-- Hermes 提供浏览器或图片搜索工具，在线配图功能才会生效
-- 网络访问允许搜索和下载图片
+- A working `uvx` installation
+- Access to download or run `office-powerpoint-mcp-server`
+- Hermes browser or image-search tools for online image sourcing
+- Network access for searching and downloading images
 
-安装完成后新开一个 Hermes 对话，让 Skill 重新加载。
+Start a new Hermes conversation after installation so that Hermes loads the skill again.
 
-## 上传到 GitHub
+## Using GitHub for Synchronization
 
-长期使用时，GitHub 私有仓库比反复通过邮件发送 ZIP 更合适：
+A private GitHub repository is preferable to repeatedly sending ZIP archives:
 
-- 可以保留每次 Skill 修改记录
-- 多台电脑可以通过 `git pull` 同步
-- 出现问题时可以回滚到旧版本
-- ZIP 可以作为第一次迁移或离线备份
+- It preserves the history of every skill update
+- Multiple computers can synchronize changes with `git pull`
+- Previous versions can be restored when necessary
+- ZIP archives can still be used for initial transfer or offline backup
 
-可以将解压后的整个目录上传到一个新的 Private GitHub repository。后续在其他电脑上通过 `git clone` 获取，然后复制或软链接其中的 `powerpoint-generator` 文件夹到 Hermes Skills 目录。
+Upload this complete repository directory to a private GitHub repository. On another computer, clone the repository and copy or symlink its `powerpoint-generator` directory into the Hermes skills directory.
 
-## 包含的文件
+Example:
+
+```bash
+git clone https://github.com/Xr810/PowerPoint_MCP.git
+mkdir -p ~/.hermes/skills/productivity
+cp -R PowerPoint_MCP/powerpoint-generator \
+  ~/.hermes/skills/productivity/powerpoint-generator
+```
+
+## Repository Structure
 
 ```text
-powerpoint-generator-hermes/
+PowerPoint_MCP/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
@@ -83,3 +94,12 @@ powerpoint-generator-hermes/
     └── scripts/
         └── check_text_layout.py
 ```
+
+## Validation
+
+Before distributing an updated version:
+
+1. Validate the skill directory with the skill validation tool.
+2. Confirm that the PowerPoint template opens without archive errors.
+3. Run `scripts/check_text_layout.py` against a generated presentation.
+4. Open a new Hermes conversation and test a complete outline-to-PowerPoint workflow.
